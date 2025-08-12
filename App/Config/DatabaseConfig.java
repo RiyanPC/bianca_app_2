@@ -11,7 +11,7 @@ public class DatabaseConfig {
         try {
             String url = "jdbc:mysql://192.168.18.32:3306/bianca_app";
             String user = "bia"; 
-            String password = "bia123"; 
+            String password = "bianca"; 
             
             connection = DriverManager.getConnection(url, user, password);
             System.out.println("Conexión exitosa a la base de datos.");

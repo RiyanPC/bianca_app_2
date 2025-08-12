@@ -1,20 +1,20 @@
 package Controller;
 
 import Config.DatabaseConfig;
-import models.Empresa;
+import Forms.EmpresaForm;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmpresaController {
-    public static List<Empresa> listarEmpresas() {
-        List<Empresa> empresas = new ArrayList<>();
+    public static List<EmpresaForm> listarEmpresas() {
+        List<EmpresaForm> empresas = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getConnection()) {
             String sql = "SELECT CM_IdCompania, CM_Ruc, CM_Nombre_Compania, CM_Nombre_Comercial, CM_Host, CM_Database, CM_User, CM_Password FROM empresas";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Empresa e = new Empresa();
+                EmpresaForm e = new EmpresaForm();
                 e.setId(rs.getInt("CM_IdCompania"));
                 e.setRuc(rs.getString("CM_Ruc"));
                 e.setNombreCompania(rs.getString("CM_Nombre_Compania"));

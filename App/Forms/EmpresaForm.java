@@ -1,6 +1,6 @@
-package models;
+package Forms;
 
-public class Empresa {
+public class EmpresaForm {
     private int id;
     private String ruc;
     private String nombreCompania;
