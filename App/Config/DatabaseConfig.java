@@ -9,7 +9,7 @@ public class DatabaseConfig {
 
     public static void init() {
         try {
-            String url = "jdbc:mysql://192.168.18.32:3306/bianca_app";
+            String url = "jdbc:mysql://192.168.18.32:3306/bd_10452474005";
             String user = "bia"; 
             String password = "bianca"; 
             
@@ -24,4 +24,4 @@ public class DatabaseConfig {
     public static Connection getConnection() {
         return connection;
     }
-}
+}   
