@@ -2,32 +2,41 @@ package Controller;
 
 import Config.DatabaseConfig;
 import Forms.EmpresaForm;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmpresaController {
-    public static List<EmpresaForm> listarEmpresas() {
-        List<EmpresaForm> empresas = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            String sql = "SELECT CM_IdCompania, CM_Ruc, CM_Nombre_Compania, CM_Nombre_Comercial, CM_Host, CM_Database, CM_User, CM_Password FROM empresas";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery();
+
+    public List<EmpresaForm> obtenerEmpresas() {
+        List<EmpresaForm> lista = new ArrayList<>();
+
+        String sql = "SELECT CM_IdCompania, CM_Ruc, CM_Nombre_Compania, CM_Nombre_Comercial, "
+                   + "CM_Logo1, CM_Logo2, CM_Logo3 "
+                   + "FROM compania";
+
+        try (Connection con = DatabaseConfig.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                EmpresaForm e = new EmpresaForm();
-                e.setId(rs.getInt("CM_IdCompania"));
-                e.setRuc(rs.getString("CM_Ruc"));
-                e.setNombreCompania(rs.getString("CM_Nombre_Compania"));
-                e.setNombreComercial(rs.getString("CM_Nombre_Comercial"));
-                e.setHost(rs.getString("CM_Host"));
-                e.setDatabase(rs.getString("CM_Database"));
-                e.setUser(rs.getString("CM_User"));
-                e.setPassword(rs.getString("CM_Password"));
-                empresas.add(e);
+                EmpresaForm emp = new EmpresaForm();
+                emp.setId(rs.getInt("CM_IdCompania"));
+                emp.setRuc(rs.getString("CM_Ruc"));
+                emp.setNombreCompania(rs.getString("CM_Nombre_Compania"));
+                emp.setNombreComercial(rs.getString("CM_Nombre_Comercial"));
+
+                // Guardamos los logos como bytes
+                emp.setLogo1(rs.getBytes("CM_Logo1"));
+                emp.setLogo2(rs.getBytes("CM_Logo2"));
+                emp.setLogo3(rs.getBytes("CM_Logo3"));
+
+                lista.add(emp);
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return empresas;
+        return lista;
     }
 }
