@@ -5,10 +5,13 @@ import java.awt.*;
 import java.sql.*;
 import javax.swing.*;
 
+// ---------------- Ventana Principal ----------------
 public class EmpresasUI extends JFrame {
+    private PanelDatos panelDatos;
+    private PanelLogos panelLogos;
     private JComboBox<String> comboEmpresas;
-    private JLabel lblId, lblRuc, lblNombreCompania, lblNombreComercial;
-    private JPanel panelLogos;
+    private JCheckBox chkVerLogos;
+    private String empresaSeleccionada;
 
     public EmpresasUI() {
         setTitle("Empresas");
@@ -16,52 +19,45 @@ public class EmpresasUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Panel izquierdo
-        JPanel panelIzquierdo = new JPanel();
-        panelIzquierdo.setLayout(new BorderLayout());
-        panelIzquierdo.setPreferredSize(new Dimension(300, 400));
+        // Panel izquierdo con datos y logos
+        JPanel panelIzquierdo = new JPanel(new BorderLayout());
+        panelIzquierdo.setPreferredSize(new Dimension(300, 500));
         add(panelIzquierdo, BorderLayout.WEST);
 
-        // Panel datos
-        JPanel panelDatos = new JPanel(new GridLayout(5, 1));
-        lblId = new JLabel("ID: ");
-        lblRuc = new JLabel("RUC: ");
-        lblNombreCompania = new JLabel("Compañía: ");
-        lblNombreComercial = new JLabel("Comercial: ");
-
-        panelDatos.add(lblId);
-        panelDatos.add(lblRuc);
-        panelDatos.add(lblNombreCompania);
-        panelDatos.add(lblNombreComercial);
+        panelDatos = new PanelDatos();
+        panelLogos = new PanelLogos();
 
         panelIzquierdo.add(panelDatos, BorderLayout.NORTH);
-
-        // Panel de imagenes
-        panelLogos = new JPanel();
-        panelLogos.setLayout(new BoxLayout(panelLogos, BoxLayout.Y_AXIS));
         panelIzquierdo.add(panelLogos, BorderLayout.CENTER);
 
-        // Panel superior
-        JPanel panelSuperior = new JPanel();
+        // Panel superior con combo y checkbox
+        JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
         comboEmpresas = new JComboBox<>();
+        chkVerLogos = new JCheckBox("Ver logos", true);
+
         cargarEmpresas();
-        comboEmpresas.addActionListener(e -> mostrarDatosEmpresa((String) comboEmpresas.getSelectedItem()));
+
+        comboEmpresas.addActionListener(e -> {
+            empresaSeleccionada = (String) comboEmpresas.getSelectedItem();
+            mostrarDatosEmpresa();
+        });
+
+        chkVerLogos.addActionListener(e -> mostrarDatosEmpresa());
+
         panelSuperior.add(new JLabel("Seleccione empresa:"));
         panelSuperior.add(comboEmpresas);
+        panelSuperior.add(chkVerLogos);
         add(panelSuperior, BorderLayout.NORTH);
 
-        // Panel derecho
-        JPanel panelDerecho = new JPanel();
-        panelDerecho.setBackground(Color.LIGHT_GRAY);
-        add(panelDerecho, BorderLayout.CENTER);
+        // Panel derecho vacío
+        add(new JPanel(), BorderLayout.CENTER);
     }
 
     private void cargarEmpresas() {
-        try {
-            Connection conn = DatabaseConfig.getConnection();
-            String sql = "SELECT CM_Nombre_Compania FROM compania";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT CM_Nombre_Compania FROM compania");
+             ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 comboEmpresas.addItem(rs.getString("CM_Nombre_Compania"));
             }
@@ -70,50 +66,98 @@ public class EmpresasUI extends JFrame {
         }
     }
 
-    private void mostrarDatosEmpresa(String nombre) {
-        try {
-            Connection conn = DatabaseConfig.getConnection();
-            String sql = "SELECT CM_IdCompania, CM_Ruc, CM_Nombre_Compania, CM_Nombre_Comercial, " +
-                         "CM_Logo1, CM_Logo2, CM_Logo3 FROM compania WHERE CM_Nombre_Compania = ?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, nombre);
+    private void mostrarDatosEmpresa() {
+        if (empresaSeleccionada == null) return;
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT CM_IdCompania, CM_Ruc, CM_Nombre_Compania, CM_Nombre_Comercial, " +
+                             "CM_Logo1, CM_Logo2, CM_Logo3 " +
+                             "FROM compania WHERE CM_Nombre_Compania = ?")) {
+
+            ps.setString(1, empresaSeleccionada);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                lblId.setText("ID: " + rs.getInt("CM_IdCompania"));
-                lblRuc.setText("RUC: " + rs.getString("CM_Ruc"));
-                lblNombreCompania.setText("Compañía: " + rs.getString("CM_Nombre_Compania"));
-                lblNombreComercial.setText("Comercial: " + rs.getString("CM_Nombre_Comercial"));
+                // Actualizar datos
+                panelDatos.setDatos(
+                        rs.getInt("CM_IdCompania"),
+                        rs.getString("CM_Ruc"),
+                        rs.getString("CM_Nombre_Compania"),
+                        rs.getString("CM_Nombre_Comercial")
+                );
 
-                // Remover imagenes si ya habian antes:
-                panelLogos.removeAll();
-
-                // Añadir imágenes solo si existen
-                addImagenSiExiste(panelLogos, rs.getBytes("CM_Logo1"));
-                addImagenSiExiste(panelLogos, rs.getBytes("CM_Logo2"));
-                addImagenSiExiste(panelLogos, rs.getBytes("CM_Logo3"));
-
-                panelLogos.revalidate();
-                panelLogos.repaint();
+                // Actualizar logos
+                if (chkVerLogos.isSelected()) {
+                    panelLogos.mostrarLogos(
+                            rs.getBytes("CM_Logo1"),
+                            rs.getBytes("CM_Logo2"),
+                            rs.getBytes("CM_Logo3")
+                    );
+                } else {
+                    panelLogos.limpiar();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private void addImagenSiExiste(JPanel panel, byte[] imgBytes) {
-        if (imgBytes != null && imgBytes.length > 0) {
-            JLabel label = new JLabel();
-            ImageIcon icon = new ImageIcon(imgBytes);
-            Image scaled = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
-            label.setIcon(new ImageIcon(scaled));
-            label.setAlignmentX(Component.CENTER_ALIGNMENT);
-            panel.add(label);
-        }
-    }
-
     public static void main(String[] args) {
         DatabaseConfig.init();
         SwingUtilities.invokeLater(() -> new EmpresasUI().setVisible(true));
+    }
+}
+
+// ---------------- PanelDatos ----------------
+class PanelDatos extends JPanel {
+    private JLabel lblId, lblRuc, lblNombreCompania, lblNombreComercial;
+
+    public PanelDatos() {
+        setLayout(new GridLayout(4, 1));
+        lblId = new JLabel("ID: ");
+        lblRuc = new JLabel("RUC: ");
+        lblNombreCompania = new JLabel("Compañía: ");
+        lblNombreComercial = new JLabel("Comercial: ");
+        add(lblId);
+        add(lblRuc);
+        add(lblNombreCompania);
+        add(lblNombreComercial);
+    }
+
+    public void setDatos(int id, String ruc, String compania, String comercial) {
+        lblId.setText("ID: " + id);
+        lblRuc.setText("RUC: " + ruc);
+        lblNombreCompania.setText("Compañía: " + compania);
+        lblNombreComercial.setText("Comercial: " + comercial);
+    }
+}
+
+// ---------------- PanelLogos ----------------
+class PanelLogos extends JPanel {
+    public PanelLogos() {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    }
+
+    public void mostrarLogos(byte[]... imagenes) {
+        removeAll();
+        for (byte[] img : imagenes) {
+            if (img != null && img.length > 0) {
+                JLabel label = new JLabel();
+                ImageIcon icon = new ImageIcon(img);
+                Image scaled = icon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+                label.setIcon(new ImageIcon(scaled));
+                label.setAlignmentX(Component.CENTER_ALIGNMENT);
+                add(label);
+            }
+        }
+        revalidate();
+        repaint();
+    }
+
+    public void limpiar() {
+        removeAll();
+        revalidate();
+        repaint();
     }
 }
