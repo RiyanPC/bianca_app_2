@@ -1,9 +1,9 @@
 package Forms;
 
-import Controller.EmpresasController;
 import Controller.Empresa;
-import javax.swing.*;
+import Controller.EmpresasController;
 import java.awt.*;
+import javax.swing.*;
 
 public class EmpresasUI extends JFrame {
     private PanelDatos panelDatos;
@@ -13,40 +13,49 @@ public class EmpresasUI extends JFrame {
     private EmpresasController controller;
 
     public EmpresasUI() {
+        controller = new EmpresasController();
         setTitle("Empresas");
         setSize(800, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        controller = new EmpresasController();
+        initUI();
+        initEvents();
+        cargarEmpresas();
+    }
 
-        JPanel panelIzquierdo = new JPanel(new BorderLayout());
-        panelIzquierdo.setPreferredSize(new Dimension(300, 500));
-        add(panelIzquierdo, BorderLayout.WEST);
-
+    private void initUI() {
+        // Panel izquierdo (datos y logos)
         panelDatos = new PanelDatos();
         panelLogos = new PanelLogos();
-
+        JPanel panelIzquierdo = new JPanel(new BorderLayout());
+        panelIzquierdo.setPreferredSize(new Dimension(300, 500));
         panelIzquierdo.add(panelDatos, BorderLayout.NORTH);
         panelIzquierdo.add(panelLogos, BorderLayout.CENTER);
+        add(panelIzquierdo, BorderLayout.WEST);
 
-        JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // Panel superior (controles)
         comboEmpresas = new JComboBox<>();
         chkVerLogos = new JCheckBox("Ver logos", true);
-
-        for (String empresa : controller.obtenerListaEmpresas()) {
-            comboEmpresas.addItem(empresa);
-        }
-
-        comboEmpresas.addActionListener(e -> mostrarDatosEmpresa());
-        chkVerLogos.addActionListener(e -> mostrarDatosEmpresa());
-
+        JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelSuperior.add(new JLabel("Seleccione empresa:"));
         panelSuperior.add(comboEmpresas);
         panelSuperior.add(chkVerLogos);
         add(panelSuperior, BorderLayout.NORTH);
 
+        // Centro vacío
         add(new JPanel(), BorderLayout.CENTER);
+    }
+
+    private void initEvents() {
+        comboEmpresas.addActionListener(e -> mostrarDatosEmpresa());
+        chkVerLogos.addActionListener(e -> mostrarDatosEmpresa());
+    }
+
+    private void cargarEmpresas() {
+        for (String empresa : controller.obtenerListaEmpresas()) {
+            comboEmpresas.addItem(empresa);
+        }
     }
 
     private void mostrarDatosEmpresa() {
