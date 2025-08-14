@@ -68,6 +68,7 @@ public class EmpresasUI extends JFrame {
                 panelLogos.mostrarLogos(empresa.logo1, empresa.logo2, empresa.logo3);
             } else {
                 panelLogos.limpiar();
+                
             }
         }
     }
