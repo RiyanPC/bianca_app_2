@@ -8,6 +8,7 @@ import javax.swing.*;
 public class EmpresasUI extends JFrame {
     private PanelDatos panelDatos;
     private PanelLogos panelLogos;
+    private PanelDatosRelacionados panelDerecho;
     private JComboBox<String> comboEmpresas;
     private JCheckBox chkVerLogos;
     private EmpresasController controller;
@@ -15,7 +16,7 @@ public class EmpresasUI extends JFrame {
     public EmpresasUI() {
         controller = new EmpresasController();
         setTitle("Empresas");
-        setSize(800, 500);
+        setSize(1000, 500); // más ancho para ver panel derecho
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -43,8 +44,9 @@ public class EmpresasUI extends JFrame {
         panelSuperior.add(chkVerLogos);
         add(panelSuperior, BorderLayout.NORTH);
 
-        // Centro vacío
-        add(new JPanel(), BorderLayout.CENTER);
+        // Panel derecho (datos relacionados)
+        panelDerecho = new PanelDatosRelacionados();
+        add(panelDerecho, BorderLayout.CENTER);
     }
 
     private void initEvents() {
@@ -64,12 +66,16 @@ public class EmpresasUI extends JFrame {
 
         if (empresa != null) {
             panelDatos.setDatos(empresa.id, empresa.ruc, empresa.nombreCompania, empresa.nombreComercial);
+
             if (chkVerLogos.isSelected()) {
                 panelLogos.mostrarLogos(empresa.logo1, empresa.logo2, empresa.logo3);
             } else {
                 panelLogos.limpiar();
-                
             }
+
+            // Cargar tablas relacionadas
+            panelDerecho.cargarDatos(empresa.id);
         }
     }
 }
+
