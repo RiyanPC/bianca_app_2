@@ -55,7 +55,6 @@ public class EmpresaFormDialog extends JDialog {
         add(panelCampos, BorderLayout.CENTER);
         add(panelBoton, BorderLayout.SOUTH);
 
-        // Acción del botón: actualizar directamente el objeto recibido
         btnGuardar.addActionListener(e -> {
             empresa.ruc              = txtRuc.getText();
             empresa.nombreCompania   = txtNombreCompania.getText();

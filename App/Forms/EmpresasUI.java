@@ -11,7 +11,7 @@ public class EmpresasUI extends JFrame {
     private PanelDatosRelacionados panelDerecho;
     private JComboBox<String> comboEmpresas;
     private JButton btnEditar;
-    private JButton btnToggleLogos; // <-- agregado 3
+    private JButton btnToggleLogos;
     private EmpresasController controller;
 
     private JPanel panelIzquierdo;
@@ -44,7 +44,7 @@ public class EmpresasUI extends JFrame {
         btnEditar.setEnabled(false);
 
         btnToggleLogos = new JButton(
-            "Logos", UIManager.getIcon("Tree.collapsedIcon")); // icono inicial
+            "Mostrar logos", UIManager.getIcon("Tree.collapsedIcon")); // < icono inicial
 
         JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelSuperior.add(new JLabel("Seleccione empresa:"));
